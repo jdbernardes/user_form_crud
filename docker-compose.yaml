@@ -1,29 +1,56 @@
-version: '3'
-
 services:
-  postgres-compose:
+  db_julio:
     image: postgres
+    container_name: postgres_julio
     environment:
-      POSTGRES_PASSWORD: "Postgres2024!"
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "15432:5432"
     volumes:
-      - /var/lib/postgresql/data
+        - postgres_db_julio_volume:/var/lib/postgresql/data
     networks:
-      - postgres-compose-network
-      
+      - app_network
+
   pgadmin-compose:
     image: dpage/pgadmin4
+    container_name: pgadmin4_julio
     environment:
-      PGADMIN_DEFAULT_EMAIL: "juliocd.bernardes@gmail.com"
-      PGADMIN_DEFAULT_PASSWORD: "PgAdmin2024!"
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
     ports:
       - "16543:80"
     depends_on:
-      - postgres-compose
+      - db_julio
     networks:
-      - postgres-compose-network
+      - app_network
+    volumes:
+      - postgres_pg_julio:/var/lib/pgadmin
+  
+  app:
+    build: .
+    ports:
+      - "8501:8501"
+    environment:
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+    depends_on:
+      - db_julio
+    volumes:
+    - app:/var/lib/app
+    networks:
+      - app_network
 
-networks: 
-  postgres-compose-network:
+networks:
+  app_network:
     driver: bridge
+
+volumes:
+  postgres_db_julio_volume:
+    external: true
+  postgres_pg_julio:
+    external: true
+  app:
+    external: false
