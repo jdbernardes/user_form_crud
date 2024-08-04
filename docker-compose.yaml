@@ -1,56 +1,64 @@
 services:
-  db_julio:
+  db:
     image: postgres
-    container_name: postgres_julio
+    container_name: ${DB_CONTAINER_NAME}
+    hostname: ${HOSTNAME_SERVER}
     environment:
+      POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "15432:5432"
     volumes:
-        - postgres_db_julio_volume:/var/lib/postgresql/data
+        - postgres_db:/var/lib/postgresql/data
     networks:
       - app_network
 
-  pgadmin-compose:
+  pgadmin:
     image: dpage/pgadmin4
-    container_name: pgadmin4_julio
+    container_name: ${PG_CONTAINER_NAME}
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
     ports:
       - "16543:80"
     depends_on:
-      - db_julio
+      - db
     networks:
       - app_network
     volumes:
-      - postgres_pg_julio:/var/lib/pgadmin
+      - postgres_pg:/var/lib/pgadmin
   
+  #APP session START
   app:
     build: .
     ports:
       - "8501:8501"
-    environment:
-      DB_NAME: ${DB_NAME}
-      DB_USER: ${DB_USER}
-      DB_PASS: ${DB_PASS}
-      DB_HOST: ${DB_HOST}
-      DB_PORT: ${DB_PORT}
+    container_name: ${APP_CONTAINER_NAME}
+    environment: 
+      DB_NAME: ${POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASS: ${POSTGRES_PASSWORD}
+      DB_HOST: ${HOSTNAME_SERVER}
+      DB_PORT: ${DB_PORT_INTERN}
     depends_on:
-      - db_julio
+      - db
     volumes:
     - app:/var/lib/app
     networks:
       - app_network
+  #APP session END
 
 networks:
   app_network:
     driver: bridge
 
 volumes:
-  postgres_db_julio_volume:
-    external: true
-  postgres_pg_julio:
-    external: true
+  postgres_db:
+    external: false
+  postgres_pg:
+    external: false
+  #APP volume START
   app:
     external: false
+  #APP volume END

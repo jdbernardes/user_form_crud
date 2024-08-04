@@ -12,8 +12,7 @@ def connect_db():
                                 port = os.environ['DB_PORT'])
         return conn
     except Exception as e:
-        print(e)
-        print("I am unable to connect to the database")
+        return e
 
 def create_table():
     conn = connect_db()
@@ -47,12 +46,11 @@ def query_user() -> list:
 def main():
     st.title("User Form")
     create_table()
-
     name =st.text_input("Add your name")
     last_name = st.text_input("Add your last name")
     age = st.text_input("Add your age")
     if st.button("Submit"):
-        sql = f"INSERT INTO users (name, last_name, age) VALUES ('{name}', '{last_name}', {age})"
+        sql = f"INSERT INTO users (first_name, last_name, age) VALUES ('{name}', '{last_name}', {age})"
         add_user(sql=sql)
         st.success("User Created")
 
